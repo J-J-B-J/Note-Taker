@@ -1,10 +1,20 @@
 #define minvalue 0
-#define maxvalue 43
+#define maxvalue 44.75
 
-char text = "";
+char text;
 
-const String kb_lower[][1] = {"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", ",", ".", "-", "=", "/", "[", "]", " ",};
-const String kb_upper[][1] = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "<", ">", "_", "+", "|", "{", "}", " ",};
+const String kb_lower[][1] = {
+  "a","b","c","d","e","f","g","h","i","j",
+  "k","l","m","n","o","p","q","r","s","t",
+  "u","v","w","x","y","z","1","2","3","4",
+  "5","6","7","8","9","0",",",".","-","=",
+  "/","[","]","BS"," "};
+const String kb_upper[][1] = {
+  "A","B","C","D","E","F","G","H","I","J",
+  "K","L","M","N","O","P","Q","R","S","T",
+  "U","V","W","X","Y","Z","!","@","#","$",
+  "%","^","&","*","(",")","<",">","_","+",
+  "|","{","}","BS"," "};
 
 class Rotary {
   private:
@@ -37,15 +47,58 @@ class Rotary {
       return int(s);
     }
 
-    String getRotaryLetter(){
+    String getRotaryLetters(String letter_list){
       int turn_value = getRotary();
       String kbl_value = kb_lower[turn_value][0];
       String kbu_value = kb_upper[turn_value][0];
-      return kbl_value + " - " + kbu_value;
+      if (letter_list == "Lower") {
+        return kbl_value;
+      }
+      else if (letter_list == "Upper") {
+        return kbu_value;
+      }
+      else if (letter_list == "Both") {
+        return kbl_value + " - " + kbu_value;
+      }
     }
 };
 
+
+class Text {
+  private:
+    String text = "";
+
+    void appendToText(String appending_text) {
+      if (appending_text == "BS") {
+        String old_text = text;
+        int old_text_length = old_text.length();
+        text = old_text.substring(0, old_text_length - 1);
+      }
+      else {
+        text += appending_text;
+      }
+      Serial.print("Text: ");
+      Serial.print(text);
+      Serial.println("|");
+    }
+    
+  public:
+    String getText() {
+      return text;
+    }
+
+    void updateButton(String newRotaryLetter) {
+      if (digitalRead(5) == 0){
+        appendToText(newRotaryLetter);
+        do {} while (digitalRead(5) == 0);
+        delay(50);
+      }
+    }
+};
+
+
 Rotary rotary_encoder;
+Text note;
 
 void setup() {
   // put your setup code here, to run once:
@@ -54,7 +107,7 @@ void setup() {
 
   pinMode(3, OUTPUT);
   pinMode(4, OUTPUT);
-  pinMode(5, INPUT);
+  pinMode(5, INPUT_PULLUP);
   pinMode(6, INPUT);
   pinMode(7, INPUT);
 
@@ -62,12 +115,14 @@ void setup() {
   digitalWrite(4, HIGH);
 }
 
-String oldRotaryLetter = "";
+String oldRotaryLetters;
 
 void loop() {
-  String newRotaryLetter = rotary_encoder.getRotaryLetter();
-  if (oldRotaryLetter != newRotaryLetter){
-    Serial.println(newRotaryLetter);
-    oldRotaryLetter = newRotaryLetter;
+  String newRotaryLetters = rotary_encoder.getRotaryLetters("Both");
+  if (oldRotaryLetters != newRotaryLetters){
+    Serial.println(newRotaryLetters);
+    oldRotaryLetters = newRotaryLetters;
   }
+  
+  note.updateButton(rotary_encoder.getRotaryLetters("Lower"));
 }
