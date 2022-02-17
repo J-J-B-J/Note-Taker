@@ -1,7 +1,7 @@
 #define minvalue 0
 #define maxvalue 44.75
 
-char text;
+#define buttonpin 5
 
 const String kb_lower[][1] = {
   "a","b","c","d","e","f","g","h","i","j",
@@ -89,21 +89,21 @@ class Text {
     }
 
     void updateButton() {
-      if (digitalRead(5) == 0){
-        do {} while (digitalRead(5) == 0);
+      if (digitalRead(buttonpin) == 0){
+        do {} while (digitalRead(buttonpin) == 0);
         delay(50);
         int start_time = millis();
-        int end_time = start_time + 100;
+        int end_time = start_time + 200;
         bool double_click = false;
         do {
-          if (digitalRead(5) == 0){
+          if (digitalRead(buttonpin) == 0){
             double_click = true;
           }
         } while (millis() < end_time);
 
         if (double_click) {
           appendToText(kb_upper[rotary_encoder.getRotary()][0]);
-          do {} while (digitalRead(5) == 0);
+          do {} while (digitalRead(buttonpin) == 0);
         }
         else{
           appendToText(kb_lower[rotary_encoder.getRotary()][0]);
