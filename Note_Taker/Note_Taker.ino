@@ -63,6 +63,7 @@ class Rotary {
     }
 };
 
+Rotary rotary_encoder;
 
 class Text {
   private:
@@ -77,9 +78,9 @@ class Text {
       else {
         text += appending_text;
       }
-      Serial.print("Text: ");
+      Serial.print("Text: '");
       Serial.print(text);
-      Serial.println("|");
+      Serial.println("'");
     }
     
   public:
@@ -87,17 +88,30 @@ class Text {
       return text;
     }
 
-    void updateButton(String newRotaryLetter) {
+    void updateButton() {
       if (digitalRead(5) == 0){
-        appendToText(newRotaryLetter);
         do {} while (digitalRead(5) == 0);
         delay(50);
+        int start_time = millis();
+        int end_time = start_time + 100;
+        bool double_click = false;
+        do {
+          if (digitalRead(5) == 0){
+            double_click = true;
+          }
+        } while (millis() < end_time);
+
+        if (double_click) {
+          appendToText(kb_upper[rotary_encoder.getRotary()][0]);
+          do {} while (digitalRead(5) == 0);
+        }
+        else{
+          appendToText(kb_lower[rotary_encoder.getRotary()][0]);
+        }
       }
     }
 };
 
-
-Rotary rotary_encoder;
 Text note;
 
 void setup() {
@@ -124,5 +138,5 @@ void loop() {
     oldRotaryLetters = newRotaryLetters;
   }
   
-  note.updateButton(rotary_encoder.getRotaryLetters("Lower"));
+  note.updateButton();
 }
