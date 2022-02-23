@@ -1,3 +1,4 @@
+#include "Settings.h"
 #include "Rotary.h"
 
 Rotary rotary_encoder;

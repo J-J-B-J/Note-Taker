@@ -1,0 +1,1 @@
+#define typepin 2

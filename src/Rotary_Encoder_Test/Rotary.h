@@ -1,8 +1,6 @@
 #define minvalue 0
 #define maxvalue 44.75
 
-#define buttonpin 5
-
 const String kb_lower[][1] = {
   "a","b","c","d","e","f","g","h","i","j",
   "k","l","m","n","o","p","q","r","s","t",
@@ -54,14 +52,9 @@ class Rotary {
 
   public:
     void begin() {
-      pinMode(3, OUTPUT);
-      pinMode(4, OUTPUT);
-      pinMode(5, INPUT_PULLUP);
+      pinMode(typepin, INPUT_PULLUP);
       pinMode(6, INPUT);
       pinMode(7, INPUT);
-    
-      digitalWrite(3, LOW);
-      digitalWrite(4, HIGH);
     }
   
     int getRotary() {
@@ -84,9 +77,7 @@ class Rotary {
       else if (letter_list == "Upper") {
         return kbu_value;
       }
-      else if (letter_list == "Both") {
-        return kbl_value + " - " + kbu_value;
-      }
+      return kbl_value + " - " + kbu_value;
     }
     
     String getText() {
@@ -94,21 +85,21 @@ class Rotary {
     }
 
     void updateButton() {
-      if (digitalRead(buttonpin) == 0){
-        do {} while (digitalRead(buttonpin) == 0);
+      if (digitalRead(typepin) == 0){
+        do {} while (digitalRead(typepin) == 0);
         delay(50);
         unsigned int start_time = millis();
         unsigned int end_time = start_time + 200;
         bool double_click = false;
         do {
-          if (digitalRead(buttonpin) == 0){
+          if (digitalRead(typepin) == 0){
             double_click = true;
           }
         } while (millis() < end_time);
 
         if (double_click) {
           appendToText(kb_upper[getRotary()][0]);
-          do {} while (digitalRead(buttonpin) == 0);
+          do {} while (digitalRead(typepin) == 0);
         }
         else{
           appendToText(kb_lower[getRotary()][0]);
