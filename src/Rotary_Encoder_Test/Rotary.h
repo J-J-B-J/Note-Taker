@@ -1,6 +1,8 @@
 #define minvalue 0
 #define maxvalue 44.75
 
+#define buttonpin 5
+
 const String kb_lower[][1] = {
   "a","b","c","d","e","f","g","h","i","j",
   "k","l","m","n","o","p","q","r","s","t",
@@ -16,7 +18,9 @@ const String kb_upper[][1] = {
 
 class Rotary {
   private:
+    String oldRotaryLetters;
     float s=0;
+    String text = "";
     
     float checkrotary(int rotary1, int rotary2){
       static byte old=0;
@@ -34,7 +38,32 @@ class Rotary {
         }
     }
 
+    void appendToText(String appending_text) {
+      if (appending_text == "BS") {
+        String old_text = text;
+        int old_text_length = old_text.length();
+        text = old_text.substring(0, old_text_length - 1);
+      }
+      else {
+        text += appending_text;
+      }
+      Serial.print("Text: '");
+      Serial.print(text);
+      Serial.println("'");
+    }
+
   public:
+    void begin() {
+      pinMode(3, OUTPUT);
+      pinMode(4, OUTPUT);
+      pinMode(5, INPUT_PULLUP);
+      pinMode(6, INPUT);
+      pinMode(7, INPUT);
+    
+      digitalWrite(3, LOW);
+      digitalWrite(4, HIGH);
+    }
+  
     int getRotary() {
       float d = checkrotary(6, 7);
       s=s+d;
@@ -59,6 +88,40 @@ class Rotary {
         return kbl_value + " - " + kbu_value;
       }
     }
-};
+    
+    String getText() {
+      return text;
+    }
 
-Rotary rotary_encoder;
+    void updateButton() {
+      if (digitalRead(buttonpin) == 0){
+        do {} while (digitalRead(buttonpin) == 0);
+        delay(50);
+        unsigned int start_time = millis();
+        unsigned int end_time = start_time + 200;
+        bool double_click = false;
+        do {
+          if (digitalRead(buttonpin) == 0){
+            double_click = true;
+          }
+        } while (millis() < end_time);
+
+        if (double_click) {
+          appendToText(kb_upper[getRotary()][0]);
+          do {} while (digitalRead(buttonpin) == 0);
+        }
+        else{
+          appendToText(kb_lower[getRotary()][0]);
+        }
+      }
+    }
+
+    void getTypedLetters() {
+      String newRotaryLetters = getRotaryLetters("Both");
+      if (oldRotaryLetters != newRotaryLetters){
+        Serial.println(newRotaryLetters);
+        oldRotaryLetters = newRotaryLetters;
+      }
+      updateButton();
+    }
+};
