@@ -1,18 +1,18 @@
-#define minvalue 0
-#define maxvalue 44.75
-
-const String kb_lower[][1] = {
+#define kb1_size 45
+const String kb_lower_1[][1] = {
   "a","b","c","d","e","f","g","h","i","j",
   "k","l","m","n","o","p","q","r","s","t",
   "u","v","w","x","y","z","1","2","3","4",
   "5","6","7","8","9","0",",",".","-","=",
   "/","[","]","BS"," "};
-const String kb_upper[][1] = {
+const String kb_upper_1[][1] = {
   "A","B","C","D","E","F","G","H","I","J",
   "K","L","M","N","O","P","Q","R","S","T",
   "U","V","W","X","Y","Z","!","@","#","$",
   "%","^","&","*","(",")","<",">","_","+",
   "|","{","}","BS"," "};
+
+
 
 class Rotary {
   private:
@@ -49,28 +49,21 @@ class Rotary {
       Serial.print(text);
       Serial.println("'");
     }
-
-  public:
-    void begin() {
-      pinMode(typepin, INPUT_PULLUP);
-      pinMode(6, INPUT);
-      pinMode(7, INPUT);
-    }
   
     int getRotary() {
       float d = checkrotary(6, 7);
       s=s+d;
 
-      if (s>maxvalue){s = minvalue;}
-      if (s<minvalue){s = maxvalue;}
+      if (s>kb1_size-0.75){s = 0;}
+      if (s<0){s = kb1_size;}
 
       return int(s);
     }
 
     String getRotaryLetters(String letter_list){
       int turn_value = getRotary();
-      String kbl_value = kb_lower[turn_value][0];
-      String kbu_value = kb_upper[turn_value][0];
+      String kbl_value = kb_lower_1[turn_value][0];
+      String kbu_value = kb_upper_1[turn_value][0];
       if (letter_list == "Lower") {
         return kbl_value;
       }
@@ -98,15 +91,16 @@ class Rotary {
         } while (millis() < end_time);
 
         if (double_click) {
-          appendToText(kb_upper[getRotary()][0]);
+          appendToText(kb_upper_1[getRotary()][0]);
           do {} while (digitalRead(typepin) == 0);
         }
         else{
-          appendToText(kb_lower[getRotary()][0]);
+          appendToText(kb_lower_1[getRotary()][0]);
         }
       }
     }
 
+  public:
     void getTypedLetters() {
       String newRotaryLetters = getRotaryLetters("Both");
       if (oldRotaryLetters != newRotaryLetters){
@@ -114,5 +108,12 @@ class Rotary {
         oldRotaryLetters = newRotaryLetters;
       }
       updateButton();
+    }
+    
+    void begin() {
+      pinMode(typepin, INPUT_PULLUP);
+      pinMode(modepin, INPUT_PULLUP);
+      pinMode(6, INPUT);
+      pinMode(7, INPUT);
     }
 };
