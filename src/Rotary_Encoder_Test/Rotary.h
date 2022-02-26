@@ -2,8 +2,9 @@ class Rotary {
   private:
     String oldRotaryLetters;
     float s=0;
-    String text = "";
+    String text = " - ";
     int mode = 0;
+    unsigned int last_pressed_time = 0;
     
     float checkrotary(int rotary1, int rotary2){
       static byte old=0;
@@ -32,7 +33,8 @@ class Rotary {
         text = old_text.substring(0, old_text_length - 1);
       }
       else if (appending_text == "RE") {
-        text += "\n";
+        text += "\n - ";
+        mode = 0; //When new line, set kb to letters
       }
       else {
         text += appending_text;
@@ -70,16 +72,20 @@ class Rotary {
 
     void updateButtons() {
       if (digitalRead(typepin) == 0){
-        if (mode == 0) {
-          appendToText(kb_1[getRotary()][0]);
+        if ((last_pressed_time + 500) <= millis()) {
+          if (mode == 0) {
+            appendToText(kb_1[getRotary()][0]);
+          }
+          else if (mode == 1) {
+            appendToText(kb_2[getRotary()][0]);
+          }
+          else if (mode == 2) {
+            appendToText(kb_3[getRotary()][0]);
+          }
+          do {} while (digitalRead(typepin) == 0);
+
+          last_pressed_time = millis();
         }
-        else if (mode == 1) {
-          appendToText(kb_2[getRotary()][0]);
-        }
-        else if (mode == 2) {
-          appendToText(kb_3[getRotary()][0]);
-        }
-        do {} while (digitalRead(typepin) == 0);
       }
       else if (digitalRead(modepin) == 0){
         mode++;
