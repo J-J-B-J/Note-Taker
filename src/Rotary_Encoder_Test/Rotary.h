@@ -39,8 +39,7 @@ class Rotary {
       else {
         text += appending_text;
       }
-      Serial.println("Text:");
-      Serial.println(text);
+      print_info();
     }
   
     int getRotary() {
@@ -90,14 +89,16 @@ class Rotary {
       else if (digitalRead(modepin) == 0){
         mode++;
         if (mode >= num_of_modes){mode = 0;}
-        print_mode();
         do {} while (digitalRead(modepin) == 0);
       }
     }
 
-    void print_mode() {
+    void print_info() {
       Serial.print("Mode: ");
-      Serial.println(modes[mode]);
+      Serial.print(modes[mode]);
+      Serial.print(" | Character: ");
+      Serial.println(getRotaryLetters());
+      Serial.println(text);
     }
 
   public:
@@ -105,7 +106,7 @@ class Rotary {
       String oldMode = getMode();
       String newRotaryLetters = getRotaryLetters();
       if (oldRotaryLetters != newRotaryLetters){
-        Serial.println(newRotaryLetters);
+        print_info();
         oldRotaryLetters = newRotaryLetters;
       }
       updateButtons();
@@ -116,7 +117,5 @@ class Rotary {
       pinMode(modepin, INPUT_PULLUP);
       pinMode(6, INPUT);
       pinMode(7, INPUT);
-
-      print_mode();
     }
 };
