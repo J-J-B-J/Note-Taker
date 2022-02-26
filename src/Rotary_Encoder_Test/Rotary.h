@@ -31,12 +31,14 @@ class Rotary {
         int old_text_length = old_text.length();
         text = old_text.substring(0, old_text_length - 1);
       }
+      else if (appending_text == "RE") {
+        text += "\n";
+      }
       else {
         text += appending_text;
       }
-      Serial.print("Text: '");
-      Serial.print(text);
-      Serial.println("'");
+      Serial.println("Text:");
+      Serial.println(text);
     }
   
     int getRotary() {
@@ -49,56 +51,33 @@ class Rotary {
       return int(s);
     }
 
-    String getRotaryLetters(String letter_list){
+    String getRotaryLetters(){
       int turn_value = getRotary();
-      String kbl_value;
-      String kbu_value;
+      String kb_value;
       if (mode == 0) {
-        kbl_value = kb_lower_1[turn_value][0];
-        kbu_value = kb_upper_1[turn_value][0];
+        kb_value = kb_1[turn_value][0];
       }
       else if (mode == 1) {
-        kbl_value = kb_lower_2[turn_value][0];
-        kbu_value = kb_upper_2[turn_value][0];
+        kb_value = kb_2[turn_value][0];
       }
-      
-      if (letter_list == "Lower") {
-        return kbl_value;
+      else if (mode == 2) {
+        kb_value = kb_3[turn_value][0];
       }
-      else if (letter_list == "Upper") {
-        return kbu_value;
-      }
-      return kbl_value + " - " + kbu_value;
+      return kb_value;
     }
+
+
 
     void updateButtons() {
       if (digitalRead(typepin) == 0){
-        do {} while (digitalRead(typepin) == 0);
-        delay(50);
-        unsigned int start_time = millis();
-        unsigned int end_time = start_time + 200;
-        bool double_click = false;
-        do {
-          if (digitalRead(typepin) == 0){
-            double_click = true;
-          }
-        } while (millis() < end_time);
-
-        if (double_click) {
-          if (mode == 0) {
-            appendToText(kb_upper_1[getRotary()][0]);
-          }
-          else if (mode == 1) {
-            appendToText(kb_upper_2[getRotary()][0]);
-          }
+        if (mode == 0) {
+          appendToText(kb_1[getRotary()][0]);
         }
-        else{
-          if (mode == 0) {
-            appendToText(kb_lower_1[getRotary()][0]);
-          }
-          else if (mode == 1) {
-            appendToText(kb_lower_2[getRotary()][0]);
-          }
+        else if (mode == 1) {
+          appendToText(kb_2[getRotary()][0]);
+        }
+        else if (mode == 2) {
+          appendToText(kb_3[getRotary()][0]);
         }
         do {} while (digitalRead(typepin) == 0);
       }
@@ -118,7 +97,7 @@ class Rotary {
   public:
     void getTypedLetters() {
       String oldMode = getMode();
-      String newRotaryLetters = getRotaryLetters("Both");
+      String newRotaryLetters = getRotaryLetters();
       if (oldRotaryLetters != newRotaryLetters){
         Serial.println(newRotaryLetters);
         oldRotaryLetters = newRotaryLetters;
