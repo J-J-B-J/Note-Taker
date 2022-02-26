@@ -3,6 +3,7 @@ class Rotary {
     String oldRotaryLetters;
     float s=0;
     String text = "";
+    int mode = 0;
     
     float checkrotary(int rotary1, int rotary2){
       static byte old=0;
@@ -18,6 +19,10 @@ class Rotary {
         case 253: return 0.25;
         default: return 0;
         }
+    }
+
+    String getMode() {
+      return modes[mode];
     }
 
     void appendToText(String appending_text) {
@@ -38,7 +43,7 @@ class Rotary {
       float d = checkrotary(6, 7);
       s=s+d;
 
-      if (s>kb1_size-0.75){s = 0;}
+      if (s>kb1_size){s = 0;}
       if (s<0){s = kb1_size;}
 
       return int(s);
@@ -46,8 +51,17 @@ class Rotary {
 
     String getRotaryLetters(String letter_list){
       int turn_value = getRotary();
-      String kbl_value = kb_lower_1[turn_value][0];
-      String kbu_value = kb_upper_1[turn_value][0];
+      String kbl_value;
+      String kbu_value;
+      if (mode == 0) {
+        kbl_value = kb_lower_1[turn_value][0];
+        kbu_value = kb_upper_1[turn_value][0];
+      }
+      else if (mode == 1) {
+        kbl_value = kb_lower_2[turn_value][0];
+        kbu_value = kb_upper_2[turn_value][0];
+      }
+      
       if (letter_list == "Lower") {
         return kbl_value;
       }
@@ -56,12 +70,8 @@ class Rotary {
       }
       return kbl_value + " - " + kbu_value;
     }
-    
-    String getText() {
-      return text;
-    }
 
-    void updateButton() {
+    void updateButtons() {
       if (digitalRead(typepin) == 0){
         do {} while (digitalRead(typepin) == 0);
         delay(50);
@@ -75,23 +85,45 @@ class Rotary {
         } while (millis() < end_time);
 
         if (double_click) {
-          appendToText(kb_upper_1[getRotary()][0]);
-          do {} while (digitalRead(typepin) == 0);
+          if (mode == 0) {
+            appendToText(kb_upper_1[getRotary()][0]);
+          }
+          else if (mode == 1) {
+            appendToText(kb_upper_2[getRotary()][0]);
+          }
         }
         else{
-          appendToText(kb_lower_1[getRotary()][0]);
+          if (mode == 0) {
+            appendToText(kb_lower_1[getRotary()][0]);
+          }
+          else if (mode == 1) {
+            appendToText(kb_lower_2[getRotary()][0]);
+          }
         }
+        do {} while (digitalRead(typepin) == 0);
       }
+      else if (digitalRead(modepin) == 0){
+        mode++;
+        if (mode >= num_of_modes){mode = 0;}
+        print_mode();
+        do {} while (digitalRead(modepin) == 0);
+      }
+    }
+
+    void print_mode() {
+      Serial.print("Mode: ");
+      Serial.println(modes[mode]);
     }
 
   public:
     void getTypedLetters() {
+      String oldMode = getMode();
       String newRotaryLetters = getRotaryLetters("Both");
       if (oldRotaryLetters != newRotaryLetters){
         Serial.println(newRotaryLetters);
         oldRotaryLetters = newRotaryLetters;
       }
-      updateButton();
+      updateButtons();
     }
     
     void begin() {
@@ -99,5 +131,7 @@ class Rotary {
       pinMode(modepin, INPUT_PULLUP);
       pinMode(6, INPUT);
       pinMode(7, INPUT);
+
+      print_mode();
     }
 };
