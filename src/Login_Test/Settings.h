@@ -13,3 +13,6 @@
  * SPI SCK     SCK          13 / ICSP-3
  * 
   */
+
+#define LedGreenPin 4
+#define LedRedPin 5
