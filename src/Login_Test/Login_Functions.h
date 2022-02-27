@@ -3,9 +3,6 @@
 
 #define Valid_RFIDs {29724, 1886;}
 
-#define RST_PIN 0
-#define SS_PIN 10
-
 MFRC522 mfrc522(SS_PIN, RST_PIN);  // Create MFRC522 instance
 
 byte cardbytes[8];                                  //for reading routine
@@ -38,7 +35,7 @@ void Unlock_With_RFID(){
   do {} while(!mfrc522.PICC_IsNewCardPresent());
   unsigned long uid = getID();
   bool Success = false;
-  for (int i; i < sizeof(Valid_RFIDs); i++) {
+  for (unsigned int i = 0; i < sizeof(Valid_RFIDs); i++) {
     if (uid == i) {
       Success = true;
       break;
